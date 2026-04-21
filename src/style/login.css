@@ -1,0 +1,133 @@
+/* ================================================
+   login.css — Page de connexion
+   ================================================ */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-alternative);
+  padding: var(--space-6);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-surface-100);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* ── Header ── */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.login-logo {
+  width: 44px;
+  height: 44px;
+  background: var(--brand-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--text-on-brand);
+  letter-spacing: -0.03em;
+}
+
+.login-header h1 {
+  font-size: 1.4rem;
+  color: var(--foreground-default);
+}
+
+.login-header p {
+  font-size: 0.875rem;
+  color: var(--text-lighter);
+}
+
+/* ── Form ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.login-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.login-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-default);
+  background: var(--bg-surface-200);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 10px var(--space-3);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.login-input::placeholder {
+  color: var(--text-lighter);
+}
+
+.login-input:focus {
+  border-color: var(--brand-default);
+  box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.12);
+}
+
+/* ── Submit ── */
+.login-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-top: var(--space-2);
+}
+
+/* ── Footer ── */
+.login-footer {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-lighter);
+}
+
+.login-footer a {
+  color: var(--brand-default);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.login-footer a:hover {
+  color: var(--brand-400);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .login-card {
+    padding: var(--space-8) var(--space-5);
+  }
+}
