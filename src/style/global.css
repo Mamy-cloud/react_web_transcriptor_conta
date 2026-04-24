@@ -420,3 +420,70 @@ hr, .divider {
   h1 { font-size: 2rem; }
   h2 { font-size: 1.5rem; }
 }
+
+/* ── Password field with eye toggle ── */
+.password-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field-wrap input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.password-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-lighter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  line-height: 1;
+}
+
+.password-eye-btn:hover {
+  color: var(--text-default);
+}
+
+/* ── Password field with eye toggle ── */
+.password-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field-wrap .login-input,
+.password-field-wrap .signup-input {
+  width: 100%;
+  padding-right: 42px;   /* réserve l'espace pour l'œil */
+}
+
+.password-eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-lighter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  line-height: 1;
+  z-index: 1;
+}
+
+.password-eye-btn:hover {
+  color: var(--text-default);
+}

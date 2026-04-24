@@ -131,3 +131,28 @@
     padding: var(--space-8) var(--space-5);
   }
 }
+
+/* ── Erreurs ── */
+.login-error {
+  font-size: 0.8rem;
+  color: var(--status-error);
+  margin-top: 2px;
+}
+
+.login-input.input-error {
+  border-color: var(--status-error);
+}
+
+.login-input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.login-api-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  color: #FCA5A5;
+  text-align: center;
+}
