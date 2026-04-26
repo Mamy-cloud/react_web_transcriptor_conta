@@ -11,9 +11,18 @@ export const API = {
   SIGN_UP:  `${BASE_URL}/sign_up/web`,
   LOGIN:    `${BASE_URL}/login/web`,
   LOGOUT:   `${BASE_URL}/logout/web/conta`,
+  SESSION:  `${BASE_URL}/session/web`,
 
   /* ── Enregistrements ── */
-  RECORDINGS: `${BASE_URL}/recordings`,
+  RECORDINGS:   `${BASE_URL}/recordings`,
+  INFO_TEMOIN:  `${BASE_URL}/info/temoin/conta`,
+
+  /* ── Transcription ── */
+  STT:              `${BASE_URL}/transcriptor/stt`,
+  STT_SEGMENTS:     `${BASE_URL}/transcriptor/stt/segments`,
+  TTS:              `${BASE_URL}/transcriptor/tts`,
+  TTS_SEGMENTS:     `${BASE_URL}/transcriptor/tts/segments`,
+  TTS_DOWNLOAD:     `${BASE_URL}/transcriptor/tts/download`,
 } as const
 
 /* ================================================

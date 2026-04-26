@@ -1,20 +1,44 @@
-import { useNavigate} from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../style/bulle_navbar.css'
-import { API } from '../api_url/api_config'
+import { API, apiFetch } from '../api_url/api_config'
+import PopUpConfirmationDeconnexion from '../popup_notification/pop_up_confirmation_deconnexion'
 
 interface BulleNavbarProps {
   onClose: () => void
 }
 
+interface UserSession {
+  identifiant: string
+  email:       string
+}
+
 export default function BulleNavbar({ onClose }: BulleNavbarProps) {
   const navigate = useNavigate()
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [user, setUser] = useState<UserSession>({ identifiant: '…', email: '…' })
 
+  /* ── Récupère les infos session depuis les cookies HttpOnly ── */
+  useEffect(() => {
+    apiFetch(API.SESSION)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          setUser({
+            identifiant: data.identifiant ?? '',
+            email:       data.email       ?? '',
+          })
+        }
+      })
+      .catch(() => {
+        // session expirée ou non connecté
+      })
+  }, [])
+
+  /* ── Déconnexion ── */
   const handleLogout = async () => {
     try {
-      await fetch(API.LOGOUT, {
-        method:      'POST',
-        credentials: 'include',   // nécessaire pour envoyer + supprimer les cookies
-      })
+      await apiFetch(API.LOGOUT, { method: 'POST' })
     } catch {
       // même en cas d'erreur réseau, on redirige
     } finally {
@@ -32,8 +56,8 @@ export default function BulleNavbar({ onClose }: BulleNavbarProps) {
 
         {/* ── Infos utilisateur ── */}
         <div className="bulle-navbar-header">
-          <div className="bulle-navbar-username">jean_dupont</div>
-          <div className="bulle-navbar-email">jean.dupont@email.com</div>
+          <div className="bulle-navbar-username">{user.identifiant}</div>
+          <div className="bulle-navbar-email">{user.email}</div>
         </div>
 
         {/* ── Menu items ── */}
@@ -51,13 +75,24 @@ export default function BulleNavbar({ onClose }: BulleNavbarProps) {
 
           <div className="bulle-navbar-divider" /> */}
 
-          <button className="bulle-navbar-item logout" onClick={handleLogout}>
+          <button
+            className="bulle-navbar-item logout"
+            onClick={() => setShowConfirm(true)}
+          >
             <span className="bulle-navbar-item-icon">🚪</span>
             Se déconnecter
           </button>
 
         </div>
       </div>
+
+      {/* ── Popup confirmation ── */}
+      {showConfirm && (
+        <PopUpConfirmationDeconnexion
+          onConfirm={handleLogout}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
     </>
   )
 }

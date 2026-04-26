@@ -1,29 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../nav/Navbar'
 import '../style/view_work.css'
+import { API, apiFetch } from '../api_url/api_config'
 
 /* ── Types ── */
 type Statut = 'transcrit' | 'non-transcrit'
 
 interface Enregistrement {
-  id: number
-  titre: string
+  id:          string
+  titre:       string
   description: string
-  region: string
-  duree: string
-  date: string
-  statut: Statut
-  temoin: string
+  region:      string | null
+  duree:       string
+  date:        string
+  statut:      Statut
+  temoin:      string
+  nom_temoin:  string
+  prenom_temoin: string
 }
 
-/* ── Données vides ── */
-const MOCK_DATA: Enregistrement[] = []
-
-/* ── Helpers ── */
-const TOTAL_HEURES = 0
-const TTS_SEUIL_1 = 50
-const TTS_SEUIL_2 = 200
-const pct = Math.min((TOTAL_HEURES / TTS_SEUIL_2) * 100, 100)
+interface Stats {
+  total_heures:         string
+  total_heures_decimal: number
+  total_fichiers:       number
+  total_transcrits:     number
+  total_non_transcrits: number
+  progression_pct:      number
+  tts_seuil_base:       number
+  tts_seuil_qualite:    number
+}
 
 const labelStatut: Record<Statut, string> = {
   'transcrit':     'Transcrit',
@@ -31,20 +37,67 @@ const labelStatut: Record<Statut, string> = {
 }
 
 export default function ViewWork() {
-  const [data, setData]                 = useState<Enregistrement[]>(MOCK_DATA)
-  const [search, setSearch]             = useState('')
-  const [filtreRegion, setFiltreRegion] = useState('Toutes')
-  const [filtreStatut, setFiltreStatut] = useState('Tous')
-  const [editing, setEditing]           = useState<Enregistrement | null>(null)
+  const navigate = useNavigate()
+  const [data,          setData]          = useState<Enregistrement[]>([])
+  const [stats,         setStats]         = useState<Stats | null>(null)
+  const [search,        setSearch]        = useState('')
+  const [filtreRegion,  setFiltreRegion]  = useState('Toutes')
+  const [filtreStatut,  setFiltreStatut]  = useState('')
+  const [editing,       setEditing]       = useState<Enregistrement | null>(null)
+  const [loading,       setLoading]       = useState(true)
 
-  /* ── Filtrage ── */
-  const displayed = data.filter(r => {
-    const matchSearch = r.titre.toLowerCase().includes(search.toLowerCase()) ||
-                        r.temoin.toLowerCase().includes(search.toLowerCase())
-    const matchRegion = filtreRegion === 'Toutes' || r.region === filtreRegion
-    const matchStatut = filtreStatut === 'Tous'   || r.statut === filtreStatut
-    return matchSearch && matchRegion && matchStatut
-  })
+  /* ── Transcrire — passe l'url_audio au transcripteur ── */
+  const handleTranscrire = (rec: Enregistrement) => {
+    if (!rec.description) {
+      console.warn('[Transcrire] Pas d\'url_audio pour', rec.id)
+      return
+    }
+    navigate('/transcription', {
+      state: {
+        collect_id: rec.id,
+        url_audio:  rec.description,
+        titre:      rec.titre,
+        temoin:     rec.temoin,
+        duree:      rec.duree,
+      }
+    })
+  }
+
+  /* ── Chargement des données ── */
+  const fetchData = async (q = search, r = filtreRegion, s = filtreStatut) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ query: q, region: r, statut: s })
+      const res    = await apiFetch(`${API.INFO_TEMOIN}?${params}`)
+      const json   = await res.json()
+      if (json.success) {
+        setStats(json.stats)
+        setData(json.tableau)
+      }
+    } catch (e) {
+      console.error('Erreur chargement données :', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  /* ── Filtres ── */
+  const handleSearch = (val: string) => {
+    setSearch(val)
+    fetchData(val, filtreRegion, filtreStatut)
+  }
+
+  const handleRegion = (val: string) => {
+    setFiltreRegion(val)
+    fetchData(search, val, filtreStatut)
+  }
+
+  const handleStatut = (val: string) => {
+    setFiltreStatut(val)
+    fetchData(search, filtreRegion, val)
+  }
 
   /* ── Sauvegarde édition ── */
   const handleSave = () => {
@@ -53,8 +106,14 @@ export default function ViewWork() {
     setEditing(null)
   }
 
-  const regions = ['Toutes', ...Array.from(new Set(data.map(r => r.region)))]
-  const statuts = ['Tous', 'transcrit', 'non-transcrit']
+  const regions = ['Toutes', ...Array.from(new Set(data.map(r => r.region).filter(Boolean)))]
+  const statuts = ['', 'transcrit', 'non-transcrit']
+
+  const pct             = stats ? stats.progression_pct : 0
+  const totalHeures     = stats ? stats.total_heures : '0h 0min 0s'
+  const TTS_SEUIL_1     = stats ? stats.tts_seuil_base    : 50
+  const TTS_SEUIL_2     = stats ? stats.tts_seuil_qualite : 200
+  const totalDecimal    = stats ? stats.total_heures_decimal : 0
 
   return (
     <>
@@ -74,22 +133,22 @@ export default function ViewWork() {
           <div className="work-stats">
             <div className="work-stat-card brand">
               <span className="work-stat-label">Heures enregistrées</span>
-              <span className="work-stat-value">{TOTAL_HEURES}h</span>
+              <span className="work-stat-value">{totalHeures}</span>
               <span className="work-stat-sub">sur {TTS_SEUIL_2}h objectif TTS qualité</span>
             </div>
             <div className="work-stat-card">
               <span className="work-stat-label">Fichiers total</span>
-              <span className="work-stat-value">{data.length}</span>
+              <span className="work-stat-value">{stats?.total_fichiers ?? 0}</span>
               <span className="work-stat-sub">enregistrements</span>
             </div>
             <div className="work-stat-card">
               <span className="work-stat-label">Transcrits</span>
-              <span className="work-stat-value">{data.filter(r => r.statut === 'transcrit').length}</span>
+              <span className="work-stat-value">{stats?.total_transcrits ?? 0}</span>
               <span className="work-stat-sub">fichiers validés</span>
             </div>
             <div className="work-stat-card">
               <span className="work-stat-label">Non transcrits</span>
-              <span className="work-stat-value">{data.filter(r => r.statut === 'non-transcrit').length}</span>
+              <span className="work-stat-value">{stats?.total_non_transcrits ?? 0}</span>
               <span className="work-stat-sub">à traiter</span>
             </div>
           </div>
@@ -98,7 +157,7 @@ export default function ViewWork() {
           <div className="work-tts-bar">
             <div className="work-tts-bar-header">
               <span>Progression vers le TTS corse</span>
-              <span className="work-tts-hint">{TOTAL_HEURES}h / {TTS_SEUIL_2}h</span>
+              <span className="work-tts-hint">{totalHeures} / {TTS_SEUIL_2}h</span>
             </div>
             <div className="work-tts-track">
               <div className="work-tts-fill" style={{ width: `${pct}%` }} />
@@ -109,12 +168,12 @@ export default function ViewWork() {
                 <span>0h</span>
               </div>
               <div className="work-tts-milestone">
-                <div className={`work-tts-milestone-dot${TOTAL_HEURES >= TTS_SEUIL_1 ? ' reached' : ''}`} />
-                <span className={TOTAL_HEURES >= TTS_SEUIL_1 ? 'reached' : ''}>50h — TTS de base</span>
+                <div className={`work-tts-milestone-dot${totalDecimal >= TTS_SEUIL_1 ? ' reached' : ''}`} />
+                <span className={totalDecimal >= TTS_SEUIL_1 ? 'reached' : ''}>50h — TTS de base</span>
               </div>
               <div className="work-tts-milestone">
-                <div className={`work-tts-milestone-dot${TOTAL_HEURES >= TTS_SEUIL_2 ? ' reached' : ''}`} />
-                <span className={TOTAL_HEURES >= TTS_SEUIL_2 ? 'reached' : ''}>200h — TTS qualité</span>
+                <div className={`work-tts-milestone-dot${totalDecimal >= TTS_SEUIL_2 ? ' reached' : ''}`} />
+                <span className={totalDecimal >= TTS_SEUIL_2 ? 'reached' : ''}>200h — TTS qualité</span>
               </div>
             </div>
           </div>
@@ -126,15 +185,15 @@ export default function ViewWork() {
               type="text"
               placeholder="Rechercher un titre ou témoin…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => handleSearch(e.target.value)}
             />
-            <select className="work-filter-select" value={filtreRegion} onChange={e => setFiltreRegion(e.target.value)}>
+            <select className="work-filter-select" value={filtreRegion} onChange={e => handleRegion(e.target.value)}>
               {regions.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
-            <select className="work-filter-select" value={filtreStatut} onChange={e => setFiltreStatut(e.target.value)}>
+            <select className="work-filter-select" value={filtreStatut} onChange={e => handleStatut(e.target.value)}>
               {statuts.map(s => (
                 <option key={s} value={s}>
-                  {s === 'Tous' ? 'Tous statuts' : labelStatut[s as Statut]}
+                  {s === '' ? 'Tous statuts' : labelStatut[s as Statut]}
                 </option>
               ))}
             </select>
@@ -145,41 +204,86 @@ export default function ViewWork() {
             <table className="work-table">
               <thead>
                 <tr>
-                  <th>Titre / Description</th>
-                  <th>Région</th>
-                  <th>Durée</th>
-                  <th>Date</th>
-                  <th>Statut</th>
-                  <th>Témoin</th>
-                  <th>Actions</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Titre / Description</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Région</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Durée</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Date</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Statut</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Témoin</th>
+                  <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {displayed.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
+                      Chargement…
+                    </td>
+                  </tr>
+                ) : data.length === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
                       Aucun enregistrement trouvé.
                     </td>
                   </tr>
-                ) : displayed.map(rec => (
+                ) : data.map(rec => (
                   <tr key={rec.id}>
-                    <td>
-                      <div className="work-table-title">{rec.titre}</div>
-                      <div className="work-table-desc">{rec.description}</div>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>
+                      <div className="work-table-title">
+                        {(() => {
+                          try {
+                            const q = JSON.parse(rec.titre)
+                            const theme = q.find((f: any) => f.champ === 'themes')
+                            return theme?.valeur || '—'
+                          } catch { return rec.titre || '—' }
+                        })()}
+                      </div>
+                      <div className="work-table-desc">
+                        {(() => {
+                          try {
+                            const q = JSON.parse(rec.titre)
+                            const champs = [
+                              { key: 'accompagnant',    label: 'Accompagnant' },
+                              { key: 'lieu',            label: 'Lieu'         },
+                              { key: 'periode_evoquee', label: 'Période'      },
+                              { key: 'themes',          label: 'Thème'        },
+                              { key: 'sujet_du_jour',   label: 'Sujet'        },
+                            ]
+                            return (
+                              <ul style={{ margin: 0, paddingLeft: '1rem', listStyle: 'disc' }}>
+                                {champs.map(({ key, label }) => {
+                                  const item = q.find((f: any) => f.champ === key)
+                                  if (!item?.valeur) return null
+                                  return (
+                                    <li key={key} style={{ fontSize: '0.78rem', color: 'var(--text-lighter)' }}>
+                                      <span style={{ color: 'var(--text-light)', fontWeight: 500 }}>{label} : </span>
+                                      {item.valeur}
+                                    </li>
+                                  )
+                                })}
+                              </ul>
+                            )
+                          } catch { return rec.description || '' }
+                        })()}
+                      </div>
                     </td>
-                    <td>{rec.region}</td>
-                    <td>{rec.duree}</td>
-                    <td>{rec.date}</td>
-                    <td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>{rec.region ?? ''}</td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>{rec.duree}</td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>{rec.date}</td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>
                       <span className={`work-status ${rec.statut}`}>
                         {labelStatut[rec.statut]}
                       </span>
                     </td>
-                    <td>{rec.temoin}</td>
-                    <td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>{rec.temoin}</td>
+                    <td style={{ textAlign: 'left', verticalAlign: 'top' }}>
                       <div className="work-row-actions">
-                        <button className="work-row-btn" onClick={() => setEditing({ ...rec })}>
-                          Éditer
+                        <button
+                          className="work-row-btn"
+                          onClick={() => handleTranscrire(rec)}
+                          disabled={!rec.description}
+                        >
+                          🎙️ Transcrire
                         </button>
                       </div>
                     </td>
@@ -223,17 +327,26 @@ export default function ViewWork() {
               <label className="work-modal-label">Région</label>
               <input
                 className="work-modal-input"
-                value={editing.region}
+                value={editing.region ?? ''}
                 onChange={e => setEditing({ ...editing, region: e.target.value })}
               />
             </div>
 
             <div className="work-modal-field">
-              <label className="work-modal-label">Témoin</label>
+              <label className="work-modal-label">Prénom du témoin</label>
               <input
                 className="work-modal-input"
-                value={editing.temoin}
-                onChange={e => setEditing({ ...editing, temoin: e.target.value })}
+                value={editing.prenom_temoin}
+                onChange={e => setEditing({ ...editing, prenom_temoin: e.target.value, temoin: `${e.target.value} ${editing.nom_temoin}` })}
+              />
+            </div>
+
+            <div className="work-modal-field">
+              <label className="work-modal-label">Nom du témoin</label>
+              <input
+                className="work-modal-input"
+                value={editing.nom_temoin}
+                onChange={e => setEditing({ ...editing, nom_temoin: e.target.value, temoin: `${editing.prenom_temoin} ${e.target.value}` })}
               />
             </div>
 
@@ -259,3 +372,4 @@ export default function ViewWork() {
     </>
   )
 }
+

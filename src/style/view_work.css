@@ -244,7 +244,8 @@
   padding: var(--space-4);
   border-bottom: 1px solid var(--border-default);
   color: var(--text-light);
-  vertical-align: middle;
+  vertical-align: top;
+  text-align: left;
 }
 
 .work-table tbody tr:last-child td { border-bottom: none; }
