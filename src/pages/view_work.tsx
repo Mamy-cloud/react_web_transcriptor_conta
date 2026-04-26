@@ -106,7 +106,7 @@ export default function ViewWork() {
     setEditing(null)
   }
 
-  const regions = ['Toutes', ...Array.from(new Set(data.map(r => r.region).filter(Boolean)))]
+  const regions = ['Toutes', ...Array.from(new Set(data.map(r => r.region).filter((r): r is string => r !== null)))]
   const statuts = ['', 'transcrit', 'non-transcrit']
 
   const pct             = stats ? stats.progression_pct : 0
