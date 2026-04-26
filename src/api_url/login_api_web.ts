@@ -47,6 +47,7 @@ export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
 
   const response = await fetch(API.LOGIN, {
     method:  'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body,
   })

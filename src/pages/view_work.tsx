@@ -3,53 +3,46 @@ import Navbar from '../nav/Navbar'
 import '../style/view_work.css'
 
 /* ── Types ── */
-type Statut = 'traite' | 'en-cours' | 'en-attente'
+type Statut = 'transcrit' | 'non-transcrit'
 
 interface Enregistrement {
   id: number
   titre: string
   description: string
   region: string
-  duree: string   // ex: "1h 23min"
+  duree: string
   date: string
   statut: Statut
-  interviewer: string
+  temoin: string
 }
 
-/* ── Données fictives ── */
-const MOCK_DATA: Enregistrement[] = [
-  { id: 1, titre: 'Témoignage - Ajaccio 1',   description: 'Récit de vie d\'un berger du Niolu.',        region: 'Corse-du-Sud', duree: '2h 10min', date: '2024-03-12', statut: 'traite',     interviewer: 'Marie Colonna' },
-  { id: 2, titre: 'Chants polyphoniques',      description: 'Enregistrement de chants traditionnels.',    region: 'Haute-Corse',  duree: '0h 45min', date: '2024-04-01', statut: 'en-cours',  interviewer: 'Petru Ferrandi' },
-  { id: 3, titre: 'Conte - Castagniccia',      description: 'Conte en langue corse, dialecte du centre.', region: 'Haute-Corse',  duree: '1h 05min', date: '2024-04-10', statut: 'en-attente', interviewer: 'Anne Paoli' },
-  { id: 4, titre: 'Mémoire - Porto-Vecchio',   description: 'Souvenirs de la guerre, témoignage oral.',   region: 'Corse-du-Sud', duree: '3h 20min', date: '2024-02-28', statut: 'traite',     interviewer: 'Marie Colonna' },
-  { id: 5, titre: 'Proverbes et dictons',      description: 'Collecte de proverbes corses anciens.',      region: 'Balagne',      duree: '0h 30min', date: '2024-04-15', statut: 'en-attente', interviewer: 'Petru Ferrandi' },
-]
+/* ── Données vides ── */
+const MOCK_DATA: Enregistrement[] = []
 
 /* ── Helpers ── */
-const TOTAL_HEURES = 32.5   // heures enregistrées au total (données fictives)
+const TOTAL_HEURES = 0
 const TTS_SEUIL_1 = 50
 const TTS_SEUIL_2 = 200
 const pct = Math.min((TOTAL_HEURES / TTS_SEUIL_2) * 100, 100)
 
 const labelStatut: Record<Statut, string> = {
-  'traite':      'Traité',
-  'en-cours':    'En cours',
-  'en-attente':  'En attente',
+  'transcrit':     'Transcrit',
+  'non-transcrit': 'Non transcrit',
 }
 
 export default function ViewWork() {
-  const [data, setData]               = useState<Enregistrement[]>(MOCK_DATA)
-  const [search, setSearch]           = useState('')
+  const [data, setData]                 = useState<Enregistrement[]>(MOCK_DATA)
+  const [search, setSearch]             = useState('')
   const [filtreRegion, setFiltreRegion] = useState('Toutes')
   const [filtreStatut, setFiltreStatut] = useState('Tous')
-  const [editing, setEditing]         = useState<Enregistrement | null>(null)
+  const [editing, setEditing]           = useState<Enregistrement | null>(null)
 
   /* ── Filtrage ── */
   const displayed = data.filter(r => {
-    const matchSearch  = r.titre.toLowerCase().includes(search.toLowerCase()) ||
-                         r.interviewer.toLowerCase().includes(search.toLowerCase())
-    const matchRegion  = filtreRegion === 'Toutes' || r.region === filtreRegion
-    const matchStatut  = filtreStatut === 'Tous'   || r.statut === filtreStatut
+    const matchSearch = r.titre.toLowerCase().includes(search.toLowerCase()) ||
+                        r.temoin.toLowerCase().includes(search.toLowerCase())
+    const matchRegion = filtreRegion === 'Toutes' || r.region === filtreRegion
+    const matchStatut = filtreStatut === 'Tous'   || r.statut === filtreStatut
     return matchSearch && matchRegion && matchStatut
   })
 
@@ -60,8 +53,8 @@ export default function ViewWork() {
     setEditing(null)
   }
 
-  const regions   = ['Toutes', ...Array.from(new Set(MOCK_DATA.map(r => r.region)))]
-  const statuts   = ['Tous', 'traite', 'en-cours', 'en-attente']
+  const regions = ['Toutes', ...Array.from(new Set(data.map(r => r.region)))]
+  const statuts = ['Tous', 'transcrit', 'non-transcrit']
 
   return (
     <>
@@ -90,13 +83,13 @@ export default function ViewWork() {
               <span className="work-stat-sub">enregistrements</span>
             </div>
             <div className="work-stat-card">
-              <span className="work-stat-label">Traités</span>
-              <span className="work-stat-value">{data.filter(r => r.statut === 'traite').length}</span>
+              <span className="work-stat-label">Transcrits</span>
+              <span className="work-stat-value">{data.filter(r => r.statut === 'transcrit').length}</span>
               <span className="work-stat-sub">fichiers validés</span>
             </div>
             <div className="work-stat-card">
-              <span className="work-stat-label">En attente</span>
-              <span className="work-stat-value">{data.filter(r => r.statut === 'en-attente').length}</span>
+              <span className="work-stat-label">Non transcrits</span>
+              <span className="work-stat-value">{data.filter(r => r.statut === 'non-transcrit').length}</span>
               <span className="work-stat-sub">à traiter</span>
             </div>
           </div>
@@ -131,7 +124,7 @@ export default function ViewWork() {
             <input
               className="work-search"
               type="text"
-              placeholder="Rechercher un titre ou interviewer…"
+              placeholder="Rechercher un titre ou témoin…"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -157,7 +150,7 @@ export default function ViewWork() {
                   <th>Durée</th>
                   <th>Date</th>
                   <th>Statut</th>
-                  <th>Interviewer</th>
+                  <th>Témoin</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -182,7 +175,7 @@ export default function ViewWork() {
                         {labelStatut[rec.statut]}
                       </span>
                     </td>
-                    <td>{rec.interviewer}</td>
+                    <td>{rec.temoin}</td>
                     <td>
                       <div className="work-row-actions">
                         <button className="work-row-btn" onClick={() => setEditing({ ...rec })}>
@@ -236,15 +229,23 @@ export default function ViewWork() {
             </div>
 
             <div className="work-modal-field">
+              <label className="work-modal-label">Témoin</label>
+              <input
+                className="work-modal-input"
+                value={editing.temoin}
+                onChange={e => setEditing({ ...editing, temoin: e.target.value })}
+              />
+            </div>
+
+            <div className="work-modal-field">
               <label className="work-modal-label">Statut</label>
               <select
                 className="work-modal-input"
                 value={editing.statut}
                 onChange={e => setEditing({ ...editing, statut: e.target.value as Statut })}
               >
-                <option value="en-attente">En attente</option>
-                <option value="en-cours">En cours</option>
-                <option value="traite">Traité</option>
+                <option value="non-transcrit">Non transcrit</option>
+                <option value="transcrit">Transcrit</option>
               </select>
             </div>
 

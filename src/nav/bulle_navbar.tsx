@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate} from 'react-router-dom'
 import '../style/bulle_navbar.css'
+import { API } from '../api_url/api_config'
 
 interface BulleNavbarProps {
   onClose: () => void
@@ -8,9 +9,18 @@ interface BulleNavbarProps {
 export default function BulleNavbar({ onClose }: BulleNavbarProps) {
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    onClose()
-    navigate('/connexion')
+  const handleLogout = async () => {
+    try {
+      await fetch(API.LOGOUT, {
+        method:      'POST',
+        credentials: 'include',   // nécessaire pour envoyer + supprimer les cookies
+      })
+    } catch {
+      // même en cas d'erreur réseau, on redirige
+    } finally {
+      onClose()
+      navigate('/connexion')
+    }
   }
 
   return (

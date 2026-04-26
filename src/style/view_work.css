@@ -281,9 +281,8 @@
   white-space: nowrap;
 }
 
-.work-status.traite     { background: rgba(62,207,142,0.1); color: var(--brand-400); border-color: rgba(62,207,142,0.2); }
-.work-status.en-cours   { background: rgba(245,158,11,0.1); color: #FCD34D; border-color: rgba(245,158,11,0.2); }
-.work-status.en-attente { background: var(--bg-surface-300); color: var(--text-lighter); border-color: var(--border-default); }
+.work-status.transcrit     { background: rgba(62,207,142,0.1); color: var(--brand-400); border-color: rgba(62,207,142,0.2); }
+.work-status.non-transcrit { background: var(--bg-surface-300); color: var(--text-lighter); border-color: var(--border-default); }
 
 /* ── Row actions ── */
 .work-row-actions {
