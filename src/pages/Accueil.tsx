@@ -3,6 +3,8 @@ import '../style/Accueil.css'
 import logoConta from '../assets/img/accueil/logo_conta.jpeg'
 import logoConta2 from '../assets/img/accueil/app_icon.png'
 
+const APP_DOWNLOAD_URL = 'https://bxkpufaustfmqcuseput.supabase.co/storage/v1/object/public/bucket_app/collect_audio_V050.zip'
+
 export default function Accueil() {
   return (
     <>
@@ -21,9 +23,13 @@ export default function Accueil() {
             <Link to="/inscription" className="btn btn-default btn-sm">
               S'inscrire
             </Link>
-            <Link to="/telecharger" className="btn btn-primary btn-sm">
+            <a
+              href={APP_DOWNLOAD_URL}
+              download="collect_audio_V050.zip"
+              className="btn btn-primary btn-sm"
+            >
               Télécharger l'application
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
@@ -49,15 +55,6 @@ export default function Accueil() {
                 puis les transcrit automatiquement en plusieurs langues —
                 pour que chaque voix traverse le temps.
               </p>
-
-              {/* <div className="accueil-hero-cta">
-                <Link to="/inscription" className="btn btn-primary btn-lg">
-                  Commencer gratuitement
-                </Link>
-                <Link to="/demo" className="btn btn-default btn-lg">
-                  Voir une démo
-                </Link>
-              </div> */}
             </div>
           </div>
         </section>
