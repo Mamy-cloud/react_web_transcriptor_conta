@@ -42,8 +42,12 @@ export default function Login() {
     setApiError(null)
 
     try {
-      await loginUser(form)
-      navigate('/travail')
+      const result = await loginUser(form)
+      if (result.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/travail')
+      }
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Une erreur est survenue.')
     } finally {
@@ -111,10 +115,15 @@ export default function Login() {
         </div>
 
         {/* ── Footer ── */}
-        <p className="login-footer">
-          Pas encore de compte ?{' '}
-          <Link to="/inscription">Créer un compte</Link>
-        </p>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+          <Link to="/mot-de-passe-oublie" style={{ fontSize: '0.875rem', color: 'var(--text-lighter)' }}>
+            Mot de passe oublié ?
+          </Link>
+          <p className="login-footer">
+            Pas encore de compte ?{' '}
+            <Link to="/inscription">Créer un compte</Link>
+          </p>
+        </div>
 
       </div>
     </div>

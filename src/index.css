@@ -51,18 +51,21 @@
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
+  /* width: 1126px; */
+   max-width: 100%;
+   margin: 0;
   text-align: center;
-  min-height: 100svh;
-  display: flex;
+/*   min-height: 100svh;
+ */  display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background-color: #1C1C1C;
+
 }
 
 body {
   margin: 0;
+  background-color: #1C1C1C;
 }
 
 h1,

@@ -5,7 +5,7 @@
    Construit le JSON et appelle POST /login/web.
    ================================================ */
 
-import { API } from './api_config'
+import { API, apiFetch } from './api_config'
 
 /* ── Types ── */
 export interface LoginPayload {
@@ -18,6 +18,7 @@ export interface LoginResponse {
   message:  string
   user_id?: string
   token?:   string
+  role?:    string
 }
 
 export interface LoginFieldError {
@@ -45,10 +46,8 @@ export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
     mot_de_passe: payload.mot_de_passe,
   })
 
-  const response = await fetch(API.LOGIN, {
-    method:  'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+  const response = await apiFetch(API.LOGIN, {
+    method: 'POST',
     body,
   })
 

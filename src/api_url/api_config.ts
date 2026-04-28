@@ -8,12 +8,16 @@ export const API = {
   BASE_URL,
 
   /* ── Auth ── */
-  SIGN_UP:  `${BASE_URL}/sign_up/web`,
-  LOGIN:    `${BASE_URL}/login/web`,
-  LOGOUT:   `${BASE_URL}/logout/web/conta`,
-  SESSION:  `${BASE_URL}/session/web`,
+  SIGN_UP:         `${BASE_URL}/sign_up/web`,
+  LOGIN:           `${BASE_URL}/login/web`,
+  LOGOUT:          `${BASE_URL}/logout/web/conta`,
+  SESSION:         `${BASE_URL}/session/web`,
+  FORGOT_PASSWORD: `${BASE_URL}/password/forgot`,
+  RESET_PASSWORD:  `${BASE_URL}/password/reset`,
 
-  /* ── Enregistrements ── */
+  /* ── Admin ── */
+  ADMIN_INTERVIEWERS:   `${BASE_URL}/admin/interviewers`,
+  ADMIN_DATA_COLLECTED: `${BASE_URL}/list/data/collected`,
   RECORDINGS:   `${BASE_URL}/recordings`,
   INFO_TEMOIN:  `${BASE_URL}/info/temoin/conta`,
 
@@ -34,7 +38,7 @@ export const API = {
    ================================================ */
 
 export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  return fetch(url, {
+  const res = await fetch(url, {
     ...options,
     credentials: 'include',
     headers: {
@@ -42,4 +46,11 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
       ...options.headers,
     },
   })
+
+  // ── Redirige automatiquement vers /error_404 si non connecté ──
+  if (res.status === 401) {
+    window.location.href = '/error_404'
+  }
+
+  return res
 }
