@@ -117,7 +117,7 @@ export default function Login() {
         {/* ── Footer ── */}
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
           <Link to="/mot-de-passe-oublie" style={{ fontSize: '0.875rem', color: 'var(--text-lighter)' }}>
-            Mot de passe oublié ?
+            Mot de passe oublié ? <span style={{ color: 'var(--brand-default)', fontWeight: 600 }}>Cliquer ici</span>
           </Link>
           <p className="login-footer">
             Pas encore de compte ?{' '}
