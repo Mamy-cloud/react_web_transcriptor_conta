@@ -11,6 +11,7 @@ type Statut = 'transcrit' | 'non-transcrit'
 interface Enregistrement {
   id:           string
   titre:        string
+  url_audio:    string
   description:  string
   region:       string | null
   duree:        string
@@ -100,18 +101,19 @@ export default function ListOfDataCollectedDisplay() {
               <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Statut</th>
               <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Témoin</th>
               <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Interviewer</th>
+              <th style={{ textAlign: 'left', verticalAlign: 'top' }}>Audio</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
                   Chargement…
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-lighter)' }}>
                   Aucun enregistrement trouvé.
                 </td>
               </tr>
@@ -173,6 +175,35 @@ export default function ListOfDataCollectedDisplay() {
                   }}>
                     {rec.interviewer}
                   </span>
+                </td>
+                <td style={{ textAlign: 'left', verticalAlign: 'top' }}>
+                  {rec.url_audio ? (
+                    <a
+                      href={rec.url_audio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Écouter l'audio"
+                      style={{
+                        display:        'inline-flex',
+                        alignItems:     'center',
+                        justifyContent: 'center',
+                        width:          '32px',
+                        height:         '32px',
+                        borderRadius:   'var(--radius-full)',
+                        background:     'rgba(62,207,142,0.1)',
+                        border:         '1px solid rgba(62,207,142,0.25)',
+                        color:          'var(--brand-default)',
+                        textDecoration: 'none',
+                        transition:     'background var(--transition-fast)',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5,3 19,12 5,21"/>
+                      </svg>
+                    </a>
+                  ) : (
+                    <span style={{ color: 'var(--text-lighter)', fontSize: '0.8rem' }}>—</span>
+                  )}
                 </td>
               </tr>
             ))}
