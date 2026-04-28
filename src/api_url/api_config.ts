@@ -23,6 +23,8 @@ export const API = {
   TTS:              `${BASE_URL}/transcriptor/tts`,
   TTS_SEGMENTS:     `${BASE_URL}/transcriptor/tts/segments`,
   TTS_DOWNLOAD:     `${BASE_URL}/transcriptor/tts/download`,
+  VALIDATE_TRANS:   `${BASE_URL}/transcriptor/validate`,
+  UPDATE_SEGMENT:   `${BASE_URL}/transcriptor/segment`,
 } as const
 
 /* ================================================

@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import '../style/sign_up.css'
 import { signUp, validateSignUp, type SignUpPayload, type SignUpError } from '../api_url/sign_up_api'
 import { useDisplayPassword, PasswordEyeBtn } from '../components/display_password'
+import logoConta2 from '../assets/img/accueil/app_icon.png'
+
 
 export default function SignUp() {
   const navigate = useNavigate()
@@ -69,7 +71,7 @@ export default function SignUp() {
 
         {/* ── Header ── */}
         <div className="signup-header">
-          <div className="signup-logo">C</div>
+            <img src={logoConta2} alt="Logo Conta 2" className="accueil-logo-icon" />
           <div>
             <h1>Créer un compte</h1>
             <p>Rejoignez la plateforme Conta</p>
