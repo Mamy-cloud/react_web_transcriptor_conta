@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Navbar from '../nav/Navbar'
 import '../style/transcriptor.css'
 import { API, apiFetch } from '../api_url/api_config'
@@ -46,6 +46,7 @@ const makeTranscriptions = (): Transcription[] => [
 
 export default function Transcriptor() {
   const location  = useLocation()
+  const navigate  = useNavigate()
   const state     = (location.state as any) ?? {}
   const collectId = state.collect_id ?? null
 
@@ -154,19 +155,19 @@ export default function Transcriptor() {
       const data = await res.json()
       if (data.success) {
         const segments: Segment[] = data.segments.map((s: any, i: number) => {
-          let texte = s.segmentation_word || s.texte || ''
-          try {
-            const parsed = JSON.parse(texte)
-            if (Array.isArray(parsed)) texte = parsed.map((item: any) => item.valeur || '').filter(Boolean).join(' ')
-            else if (typeof parsed === 'object') texte = parsed.text || parsed.texte || texte
-          } catch { /* texte brut */ }
+          const texte_co = s.texte_co || s.segmentation_word || s.texte || ''
+          const texte_fr = s.texte_fr || ''
 
           return {
             id:             i + 1,
             debut:          s.debut || '00:00',
             fin:            s.fin   || '00:00',
             statut:         (data.validation ? 'valide' : 'en-attente') as SegStatut,
-            transcriptions: makeTranscriptions().map(t => ({ ...t, texte_co: texte })),
+            transcriptions: makeTranscriptions().map(t => ({
+              ...t,
+              texte_co,
+              texte_fr,
+            })),
           }
         })
         setFichiers(prev => prev.map(f =>
@@ -266,7 +267,7 @@ export default function Transcriptor() {
   const totalValides  = fichier?.segments.filter(s => s.statut === 'valide').length ?? 0
   const totalSegments = fichier?.segments.length ?? 0
 
-  /* ── Finaliser — envoie les segments en DB ── */
+  /* ── Finaliser — envoie les segments en DB et redirige ── */
   const handleFinaliser = async () => {
     if (!fichier?.id || fichier.segments.length === 0) return
     setFinalising(true)
@@ -287,12 +288,23 @@ export default function Transcriptor() {
       const data = await res.json()
       if (data.success) {
         console.log('[FINALISER] ✅ Segments sauvegardés en DB')
+        navigate('/travail')
       }
     } catch (e) {
       console.error('Erreur finaliser :', e)
     } finally {
       setFinalising(false)
     }
+  }
+
+  /* ── Annuler — réinitialise les segments ── */
+  const handleAnnuler = () => {
+    if (!fichier) return
+    const confirm = window.confirm('Êtes-vous sûr de vouloir annuler ? Toutes les transcriptions non sauvegardées seront perdues.')
+    if (!confirm) return
+    setFichiers(prev => prev.map(f =>
+      f.id === selectedId ? { ...f, segments: [] } : f
+    ))
   }
 
   return (
@@ -465,12 +477,18 @@ export default function Transcriptor() {
                                   <span className="trans-col-label">Transcripteur {t.id}</span>
                                   <span className="trans-col-lang">{t.transcripteur}</span>
                                 </div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-lighter)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                  Transcription (corse)
+                                </label>
                                 <textarea
                                   className="trans-textarea"
-                                  placeholder="Transcription en corse…"
+                                  placeholder="Transcription littérale en corse…"
                                   value={t.texte_co}
                                   onChange={e => updateTexte(seg.id, t.id, 'texte_co', e.target.value)}
                                 />
+                                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-lighter)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 'var(--space-2)' }}>
+                                  Traduction (français)
+                                </label>
                                 <textarea
                                   className="trans-textarea"
                                   placeholder="Traduction en français…"
@@ -508,8 +526,15 @@ export default function Transcriptor() {
                     })}
                   </div>
 
-                  {/* ── Bouton Finaliser ── */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-6)' }}>
+                  {/* ── Boutons Annuler / Finaliser ── */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
+                    <button
+                      className="btn btn-default"
+                      onClick={handleAnnuler}
+                      disabled={finalising}
+                    >
+                      ✕ Annuler
+                    </button>
                     <button
                       className="btn btn-primary"
                       onClick={handleFinaliser}
