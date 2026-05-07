@@ -3,7 +3,7 @@ import '../style/Accueil.css'
 import logoConta from '../assets/img/accueil/logo_conta.jpeg'
 import logoConta2 from '../assets/img/accueil/app_icon.png'
 
-const APP_DOWNLOAD_URL = 'https://bxkpufaustfmqcuseput.supabase.co/storage/v1/object/public/bucket_app/collect_audio_V050.zip'
+const APP_DOWNLOAD_URL = 'https://bxkpufaustfmqcuseput.supabase.co/storage/v1/object/public/bucket_app/collect_audio_V053.zip'
 
 export default function Accueil() {
   return (
